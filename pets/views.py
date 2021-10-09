@@ -129,7 +129,7 @@ def owners_near_me(request):
         return Response(ResponseSerializer(GeneralResponse(False,"Location is not set.")).data, status=status.HTTP_400_BAD_REQUEST)
     owners = Account.objects.filter(ownerlocation__point__distance_lte=(point,int(distance)*1000),is_detective=False)
     serializer = UserSerializer(owners,many=True)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -148,7 +148,7 @@ def detectives_near_me(request):
         return Response(ResponseSerializer(GeneralResponse(False,"Location is not set.")).data, status=status.HTTP_400_BAD_REQUEST)
     detectives = Account.objects.filter(detectivelocation__point__distance_lte=(point,int(distance)*1000),is_detective=True)
     serializer = UserSerializer(detectives,many=True)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def pets_near_me(request):
@@ -162,7 +162,7 @@ def pets_near_me(request):
     point = Point(float(lng), float(lat),srid=4326)
     pets = Pet.objects.filter(petlocation__point__distance_lte=(point,int(distance)*1000),petlocation__location_type=0)
     serializer = PetSerializer(pets,many=True)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -191,42 +191,103 @@ def request_case(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def accept_request(request):
-    #Owner accepts the request and a case is created
-    pass
+    if request.user.is_detective:
+        return Response(ResponseSerializer(GeneralResponse(False,"Not an owner.")).data, status=status.HTTP_403_FORBIDDEN)
+    try:
+        req = Request.objects.get(id=request.data['id'])
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Request not found.")).data, status=status.HTTP_404_NOT_FOUND)
+    req.accepted = True
+    req.save()
+    #Create a case
+    try:
+        case = Case.objects.create(
+            detective = req.detective,
+            pet = req.pet,
+            request = req,
+        )
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Able to accept request, but case was not created.")).data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = CaseSerializer(case)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_requests(request):
-    #Get the requests made by the detective
-    pass
+    if not request.user.is_detective:
+        return Response(ResponseSerializer(GeneralResponse(False,"Not a detective.")).data, status=status.HTTP_403_FORBIDDEN)
+    result_set_type = request.query_params.get('qstype','all')
+    try:
+        if result_set_type == 'accepted':
+            reqs = Request.objects.filter(detective=request.user, accepted=True)
+        elif result_set_type == 'pending':
+            reqs = Request.objects.filter(detective=request.user, accepted=False)
+        else:
+            reqs = Request.objects.filter(detective=request.user)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    serializer = RequestSerializer(reqs,many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_offers(request):
-    #Get the requests made to an owners pet
-    pass
+    if request.user.is_detective:
+        return Response(ResponseSerializer(GeneralResponse(False,"Not an owner.")).data, status=status.HTTP_403_FORBIDDEN)
+    try:
+        reqs = Request.objects.filter(pet__owner=request.user)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    serializer = RequestSerializer(reqs,many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def accept_request(request):
-    #Owner accepts a request, by ID
-    pass
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_cases(request):
-    #Get the accepted cases
-    pass
+    try:
+        if request.user.is_detective:
+            cases = Case.objects.filter(detective=request.user)
+        else:
+            cases = Case.objects.filter(pet__owner=request.user)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    serializer = CaseSerializer(cases,many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def owner_cases(request):
-    #Get the owner cases per pet
-    pass
+    try:
+        owner = Account.objects.get(id=request.query_params['owner_id'])
+        if owner.is_detective:
+            return Response(ResponseSerializer(GeneralResponse(False,"Owner not found.")).data, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Owner not found.")).data, status=status.HTTP_404_NOT_FOUND)
+    try:
+        cases = Case.objects.filter(pet__owner=owner)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    serializer = CaseSerializer(cases,many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_pets(request):
-    #List of owner pets
-    pass
+    if request.user.is_detective:
+        return Response(ResponseSerializer(GeneralResponse(False,"Not an owner.")).data, status=status.HTTP_403_FORBIDDEN)
+    pets = Pet.objects.filter(owner=request.user)
+    serializer = PetSerializer(pets,many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

@@ -10,5 +10,11 @@ urlpatterns = [
 	url(r'^ownersnearme',owners_near_me, name='ownersnearme'),
 	url(r'^makerequest/',request_case, name='makerequest'),
 	url(r'^detectivesnearme',detectives_near_me, name='detectivessnearme'),
+    url(r'^acceptrequest/',accept_request, name='acceptrequest'),
+    url(r'^myrequests',my_requests, name='myrequests'),
+    url(r'^myoffers',my_offers, name='myoffers'),
+    url(r'^mycases',my_cases, name='mycases'),
+    url(r'^ownercases',owner_cases, name='ownercases'),
+    url(r'^mypets',my_pets, name='mypets'),
     url(r'^test/',test, name='test'),
 ]

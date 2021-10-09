@@ -88,4 +88,12 @@ class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         fields = ('id','detective','pet','description','accepted','date_added','date_modified')
-        
+
+class CaseSerializer(serializers.ModelSerializer):
+    detective = UserSerializer()
+    pet = PetSerializer()
+    request_id = serializers.ReadOnlyField(source='request.id')
+
+    class Meta:
+        model = Request
+        fields = ('id','detective','pet','request_id','date_added','date_modified')
