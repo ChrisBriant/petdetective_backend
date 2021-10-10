@@ -18,7 +18,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 #For constructing URLS in the code
-BASE_URL = "http://127.0.0.1:8000/"
+BASE_URL = "https://petdetectivebackend.chrisbriant.uk/"
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -31,7 +31,7 @@ SECRET_KEY = 'lb)uo$j36ur5304jxk1&7fieojomam4^0b@3f7$m7rzg$-65h3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['petdetectivebackend.chrisbriant.uk', '178.79.146.167']
 
 
 # Application definition
@@ -161,6 +161,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
 
 SITE_NAME = "petdetectiveapi"
 ADMIN_SMTP = "admin@petdetective.org"
