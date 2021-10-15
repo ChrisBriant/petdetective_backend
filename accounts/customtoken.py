@@ -6,10 +6,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         if user.is_enabled:
             token = super().get_token(user)
-
             # Add custom claims
             token['name'] = user.name
             token['is_admin'] = user.is_staff
+            token['is_detective'] = user.is_detective
 
             return token
         else:

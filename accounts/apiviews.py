@@ -13,34 +13,34 @@ from .email import sendpasswordresetemail,sendjoiningconfirmation
 from petdetective_backend.serializers import *
 
 
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
-
-
-
-@api_view(['POST','OPTIONS'])
-def get_token(request):
-    if request.method == "POST":
-        try:
-            email = request.data["email"]
-            password = request.data["password"]
-            user = authenticate(username=email,password=password)
-            if user:
-                if user.is_enabled:
-                    #Issue token
-                    token = get_tokens_for_user(user)
-                    return Response(token, status=status.HTTP_200_OK)
-                else:
-                    return Response(ResponseSerializer(GeneralResponse(False,"User is not enabled")).data, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(ResponseSerializer(GeneralResponse(False,"User name or password are incorrect")).data, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(e)
-            return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve token")).data, status=status.HTTP_400_BAD_REQUEST)
+# def get_tokens_for_user(user):
+#     refresh = RefreshToken.for_user(user)
+#     return {
+#         'refresh': str(refresh),
+#         'access': str(refresh.access_token),
+#     }
+#
+#
+#
+# @api_view(['POST','OPTIONS'])
+# def get_token(request):
+#     if request.method == "POST":
+#         try:
+#             email = request.data["email"]
+#             password = request.data["password"]
+#             user = authenticate(username=email,password=password)
+#             if user:
+#                 if user.is_enabled:
+#                     #Issue token
+#                     token = get_tokens_for_user(user)
+#                     return Response(token, status=status.HTTP_200_OK)
+#                 else:
+#                     return Response(ResponseSerializer(GeneralResponse(False,"User is not enabled")).data, status=status.HTTP_400_BAD_REQUEST)
+#             else:
+#                 return Response(ResponseSerializer(GeneralResponse(False,"User name or password are incorrect")).data, status=status.HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             print(e)
+#             return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve token")).data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
