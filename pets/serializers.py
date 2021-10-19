@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
 from .models import *
 from django.conf import settings
-
+import json
 
 class PetLocationSerializer(serializers.ModelSerializer):
     lat = serializers.SerializerMethodField()
@@ -59,13 +59,28 @@ class DetectiveLocationSerializer(serializers.ModelSerializer):
 
 class PetSerializer(serializers.ModelSerializer):
     locations = serializers.SerializerMethodField()
+    is_case_open = serializers.SerializerMethodField()
+    requests_detective_id = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Pet
-        fields = ('id','name','description','last_seen','animal','picture','status','locations','date_added','date_modified')
+        fields = ('id','name','description','last_seen','animal','picture',
+        'status','locations','date_added','date_modified','is_case_open','requests_detective_id')
 
     def get_locations(self,obj):
         return PetLocationSerializer(obj.petlocation_set.all(),many=True).data
+
+    def get_is_case_open(self,obj):
+        if len(obj.case_set.all()) > 0:
+            return True
+        else:
+            return False
+
+    def get_requests_detective_id(self,obj):
+        return json.dumps([r.detective.id for r in list(obj.request_set.all())])
+
+
 
 
 class UserSerializer(serializers.ModelSerializer):
