@@ -92,9 +92,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_location(self,obj):
         if obj.is_detective:
-            return DetectiveLocationSerializer(obj.detectivelocation_set.all()[0]).data
+            locations = obj.detectivelocation_set.all()
+            if len(locations) > 0:
+                return DetectiveLocationSerializer(obj.detectivelocation_set.all()[0]).data
         else:
-            return OwnerLocationSerializer(obj.ownerlocation_set.all()[0]).data
+            locations = obj.ownerlocation_set.all()
+            if len(locations) > 0:
+                return OwnerLocationSerializer(obj.ownerlocation_set.all()[0]).data
 
 class RequestSerializer(serializers.ModelSerializer):
     detective = UserSerializer()
