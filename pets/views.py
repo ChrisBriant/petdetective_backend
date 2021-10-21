@@ -291,3 +291,31 @@ def my_pets(request):
     pets = Pet.objects.filter(owner=request.user)
     serializer = PetSerializer(pets,many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pet_requests(request):
+    id=request.query_params['pet_id']
+    try:
+        reqs = Request.objects.filter(pet__id=id)
+        #reqs = Request.objects.all()
+        #print(reqs)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    serializer = RequestSerializer(reqs,many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pet_cases(request):
+    id=request.query_params['pet_id']
+    try:
+        cases = Case.objects.filter(pet__id=id)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    serializer = CaseSerializer(cases,many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

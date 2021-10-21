@@ -17,4 +17,6 @@ urlpatterns = [
     url(r'^ownercases',owner_cases, name='ownercases'),
     url(r'^mypets',my_pets, name='mypets'),
     url(r'^test/',test, name='test'),
+	url(r'^petrequests/',pet_requests, name='petrequests'),
+	url(r'^petcases/',pet_cases, name='petcases'),
 ]
