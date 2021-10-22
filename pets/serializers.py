@@ -61,12 +61,14 @@ class PetSerializer(serializers.ModelSerializer):
     locations = serializers.SerializerMethodField()
     is_case_open = serializers.SerializerMethodField()
     requests_detective_id = serializers.SerializerMethodField()
+    status_str = serializers.SerializerMethodField()
 
 
     class Meta:
         model = Pet
         fields = ('id','name','description','last_seen','animal','picture',
-        'status','locations','date_added','date_modified','is_case_open','requests_detective_id')
+        'status','status_str','locations','date_added','date_modified','is_case_open',
+        'requests_detective_id')
 
     def get_locations(self,obj):
         return PetLocationSerializer(obj.petlocation_set.all(),many=True).data
@@ -80,7 +82,8 @@ class PetSerializer(serializers.ModelSerializer):
     def get_requests_detective_id(self,obj):
         return json.dumps([r.detective.id for r in list(obj.request_set.all())])
 
-
+    def get_status_str(self,obj):
+        return pet_statuses[obj.status]
 
 
 class UserSerializer(serializers.ModelSerializer):

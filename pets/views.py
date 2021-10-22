@@ -198,6 +198,8 @@ def accept_request(request):
     except Exception as e:
         print(e)
         return Response(ResponseSerializer(GeneralResponse(False,"Request not found.")).data, status=status.HTTP_404_NOT_FOUND)
+    if not req.pet.owner == request.user:
+        return Response(ResponseSerializer(GeneralResponse(False,'Denied - you are not the owner.')).data, status=status.HTTP_403_FORBIDDEN)
     req.accepted = True
     req.save()
     #Create a case
@@ -298,7 +300,7 @@ def my_pets(request):
 def pet_requests(request):
     id=request.query_params['pet_id']
     try:
-        reqs = Request.objects.filter(pet__id=id)
+        reqs = Request.objects.filter(pet__id=id, accepted=False)
         #reqs = Request.objects.all()
         #print(reqs)
     except Exception as e:
