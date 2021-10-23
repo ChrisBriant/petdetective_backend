@@ -219,19 +219,29 @@ def accept_request(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_requests(request):
-    if not request.user.is_detective:
-        return Response(ResponseSerializer(GeneralResponse(False,"Not a detective.")).data, status=status.HTTP_403_FORBIDDEN)
     result_set_type = request.query_params.get('qstype','all')
-    try:
-        if result_set_type == 'accepted':
-            reqs = Request.objects.filter(detective=request.user, accepted=True)
-        elif result_set_type == 'pending':
-            reqs = Request.objects.filter(detective=request.user, accepted=False)
-        else:
-            reqs = Request.objects.filter(detective=request.user)
-    except Exception as e:
-        print(e)
-        return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    if request.user.is_detective:
+        try:
+            if result_set_type == 'accepted':
+                reqs = Request.objects.filter(detective=request.user, accepted=True)
+            elif result_set_type == 'pending':
+                reqs = Request.objects.filter(detective=request.user, accepted=False)
+            else:
+                reqs = Request.objects.filter(detective=request.user)
+        except Exception as e:
+            print(e)
+            return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
+    else:
+        try:
+            if result_set_type == 'accepted':
+                reqs = Request.objects.filter(pet__owner=request.user, accepted=True)
+            elif result_set_type == 'pending':
+                reqs = Request.objects.filter(pet__owner=request.user, accepted=False)
+            else:
+                reqs = Request.objects.filter(pet__owner=request.user)
+        except Exception as e:
+            print(e)
+            return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve requests.")).data, status=status.HTTP_404_NOT_FOUND)
     serializer = RequestSerializer(reqs,many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
