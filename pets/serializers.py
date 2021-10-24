@@ -88,10 +88,12 @@ class PetSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
+    request_count = serializers.SerializerMethodField()
+    case_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Account
-        fields = ('id','name','is_detective','location')
+        fields = ('id','name','is_detective','location','request_count','case_count')
 
     def get_location(self,obj):
         if obj.is_detective:
@@ -102,6 +104,18 @@ class UserSerializer(serializers.ModelSerializer):
             locations = obj.ownerlocation_set.all()
             if len(locations) > 0:
                 return OwnerLocationSerializer(obj.ownerlocation_set.all()[0]).data
+
+    def get_request_count(self,obj):
+        if obj.is_detective:
+            return obj.request_set.all().count()
+        else:
+            return Request.objects.select_related('pet').filter(pet__owner=obj).count()
+
+    def get_case_count(self,obj):
+        if obj.is_detective:
+            return obj.case_set.all().count()
+        else:
+            return Case.objects.select_related('pet').filter(pet__owner=obj).count()
 
 class RequestSerializer(serializers.ModelSerializer):
     detective = UserSerializer()

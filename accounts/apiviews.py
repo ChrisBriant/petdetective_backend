@@ -11,6 +11,7 @@ from password_validator import PasswordValidator
 from .models import *
 from .email import sendpasswordresetemail,sendjoiningconfirmation
 from petdetective_backend.serializers import *
+from pets.serializers import UserSerializer
 
 
 # def get_tokens_for_user(user):
@@ -107,3 +108,9 @@ def change_password(request):
     user.set_password(password)
     user.save()
     return Response(ResponseSerializer(GeneralResponse(True,'Password succesfully changed')).data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_profile(request):
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data, status=status.HTTP_200_OK)

@@ -11,4 +11,5 @@ urlpatterns = [
 	url(r'^register/$', apiviews.register, name='register'),
 	url(r'^forgotpassword/$', apiviews.forgot_password, name='forgotpassword'),
 	url(r'^changepassword/$', apiviews.change_password, name='changepassword'),
+	url(r'^myprofile/$', apiviews.my_profile, name='myprofile'),
 ]
